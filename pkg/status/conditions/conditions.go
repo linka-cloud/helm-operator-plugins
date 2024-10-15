@@ -21,7 +21,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/operator-framework/helm-operator-plugins/pkg/internal/status"
+	"github.com/operator-framework/helm-operator-plugins/pkg/status"
 )
 
 const (

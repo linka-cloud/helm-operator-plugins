@@ -29,7 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/operator-framework/helm-operator-plugins/internal/sdk/controllerutil"
-	"github.com/operator-framework/helm-operator-plugins/pkg/internal/status"
+	"github.com/operator-framework/helm-operator-plugins/pkg/status"
 )
 
 func New(client client.Client) Updater {
@@ -46,7 +46,7 @@ type Updater struct {
 }
 
 type UpdateFunc func(*unstructured.Unstructured) bool
-type UpdateStatusFunc func(*helmAppStatus) bool
+type UpdateStatusFunc func(*HelmAppStatus) bool
 
 func (u *Updater) Update(fs ...UpdateFunc) {
 	u.updateFuncs = append(u.updateFuncs, fs...)
@@ -132,13 +132,13 @@ func RemoveFinalizer(finalizer string) UpdateFunc {
 }
 
 func EnsureCondition(condition status.Condition) UpdateStatusFunc {
-	return func(status *helmAppStatus) bool {
+	return func(status *HelmAppStatus) bool {
 		return status.Conditions.SetCondition(condition)
 	}
 }
 
 func EnsureConditionUnknown(t status.ConditionType) UpdateStatusFunc {
-	return func(s *helmAppStatus) bool {
+	return func(s *HelmAppStatus) bool {
 		return s.Conditions.SetCondition(status.Condition{
 			Type:   t,
 			Status: corev1.ConditionUnknown,
@@ -147,7 +147,7 @@ func EnsureConditionUnknown(t status.ConditionType) UpdateStatusFunc {
 }
 
 func EnsureDeployedRelease(rel *release.Release) UpdateStatusFunc {
-	return func(status *helmAppStatus) bool {
+	return func(status *HelmAppStatus) bool {
 		newRel := helmAppReleaseFor(rel)
 		if status.DeployedRelease == nil && newRel == nil {
 			return false
@@ -165,44 +165,44 @@ func RemoveDeployedRelease() UpdateStatusFunc {
 	return EnsureDeployedRelease(nil)
 }
 
-type helmAppStatus struct {
+type HelmAppStatus struct {
 	Conditions      status.Conditions `json:"conditions"`
-	DeployedRelease *helmAppRelease   `json:"deployedRelease,omitempty"`
+	DeployedRelease *HelmAppRelease   `json:"deployedRelease,omitempty"`
 }
 
-type helmAppRelease struct {
+type HelmAppRelease struct {
 	Name     string `json:"name,omitempty"`
 	Manifest string `json:"manifest,omitempty"`
 }
 
-func statusFor(obj *unstructured.Unstructured) *helmAppStatus {
+func statusFor(obj *unstructured.Unstructured) *HelmAppStatus {
 	if obj == nil || obj.Object == nil {
 		return nil
 	}
 	status, ok := obj.Object["status"]
 	if !ok {
-		return &helmAppStatus{}
+		return &HelmAppStatus{}
 	}
 
 	switch s := status.(type) {
-	case *helmAppStatus:
+	case *HelmAppStatus:
 		return s
-	case helmAppStatus:
+	case HelmAppStatus:
 		return &s
 	case map[string]interface{}:
-		out := &helmAppStatus{}
+		out := &HelmAppStatus{}
 		_ = runtime.DefaultUnstructuredConverter.FromUnstructured(s, out)
 		return out
 	default:
-		return &helmAppStatus{}
+		return &HelmAppStatus{}
 	}
 }
 
-func helmAppReleaseFor(rel *release.Release) *helmAppRelease {
+func helmAppReleaseFor(rel *release.Release) *HelmAppRelease {
 	if rel == nil {
 		return nil
 	}
-	return &helmAppRelease{
+	return &HelmAppRelease{
 		Name:     rel.Name,
 		Manifest: rel.Manifest,
 	}

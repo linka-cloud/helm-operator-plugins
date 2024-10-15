@@ -32,7 +32,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/client/interceptor"
 
-	"github.com/operator-framework/helm-operator-plugins/pkg/reconciler/internal/conditions"
+	"github.com/operator-framework/helm-operator-plugins/pkg/status/conditions"
 )
 
 const testFinalizer = "testFinalizer"
@@ -131,10 +131,10 @@ var _ = Describe("RemoveFinalizer", func() {
 })
 
 var _ = Describe("EnsureCondition", func() {
-	var obj *helmAppStatus
+	var obj *HelmAppStatus
 
 	BeforeEach(func() {
-		obj = &helmAppStatus{}
+		obj = &HelmAppStatus{}
 	})
 
 	It("should add condition if not present", func() {
@@ -150,17 +150,17 @@ var _ = Describe("EnsureCondition", func() {
 })
 
 var _ = Describe("EnsureDeployedRelease", func() {
-	var obj *helmAppStatus
+	var obj *HelmAppStatus
 	var rel *release.Release
-	var statusRelease *helmAppRelease
+	var statusRelease *HelmAppRelease
 
 	BeforeEach(func() {
-		obj = &helmAppStatus{}
+		obj = &HelmAppStatus{}
 		rel = &release.Release{
 			Name:     "initialName",
 			Manifest: "initialManifest",
 		}
-		statusRelease = &helmAppRelease{
+		statusRelease = &HelmAppRelease{
 			Name:     "initialName",
 			Manifest: "initialManifest",
 		}
@@ -180,23 +180,23 @@ var _ = Describe("EnsureDeployedRelease", func() {
 	It("should update deployed release if different name", func() {
 		obj.DeployedRelease = statusRelease
 		Expect(EnsureDeployedRelease(&release.Release{Name: "newName", Manifest: "initialManifest"})(obj)).To(BeTrue())
-		Expect(obj.DeployedRelease).To(Equal(&helmAppRelease{Name: "newName", Manifest: "initialManifest"}))
+		Expect(obj.DeployedRelease).To(Equal(&HelmAppRelease{Name: "newName", Manifest: "initialManifest"}))
 	})
 
 	It("should update deployed release if different manifest", func() {
 		obj.DeployedRelease = statusRelease
 		Expect(EnsureDeployedRelease(&release.Release{Name: "initialName", Manifest: "newManifest"})(obj)).To(BeTrue())
-		Expect(obj.DeployedRelease).To(Equal(&helmAppRelease{Name: "initialName", Manifest: "newManifest"}))
+		Expect(obj.DeployedRelease).To(Equal(&HelmAppRelease{Name: "initialName", Manifest: "newManifest"}))
 	})
 })
 
 var _ = Describe("RemoveDeployedRelease", func() {
-	var obj *helmAppStatus
-	var statusRelease *helmAppRelease
+	var obj *HelmAppStatus
+	var statusRelease *HelmAppRelease
 
 	BeforeEach(func() {
-		obj = &helmAppStatus{}
-		statusRelease = &helmAppRelease{
+		obj = &HelmAppStatus{}
+		statusRelease = &HelmAppRelease{
 			Name:     "initialName",
 			Manifest: "initialManifest",
 		}
@@ -230,29 +230,29 @@ var _ = Describe("statusFor", func() {
 	})
 
 	It("should handle status not present", func() {
-		Expect(statusFor(obj)).To(Equal(&helmAppStatus{}))
+		Expect(statusFor(obj)).To(Equal(&HelmAppStatus{}))
 	})
 
 	It("should handle *helmAppsStatus", func() {
-		obj.Object["status"] = &helmAppStatus{}
-		Expect(statusFor(obj)).To(Equal(&helmAppStatus{}))
+		obj.Object["status"] = &HelmAppStatus{}
+		Expect(statusFor(obj)).To(Equal(&HelmAppStatus{}))
 	})
 
 	It("should handle helmAppsStatus", func() {
-		obj.Object["status"] = helmAppStatus{}
-		Expect(statusFor(obj)).To(Equal(&helmAppStatus{}))
+		obj.Object["status"] = HelmAppStatus{}
+		Expect(statusFor(obj)).To(Equal(&HelmAppStatus{}))
 	})
 
 	It("should handle map[string]interface{}", func() {
 		obj.Object["status"] = map[string]interface{}{}
-		Expect(statusFor(obj)).To(Equal(&helmAppStatus{}))
+		Expect(statusFor(obj)).To(Equal(&HelmAppStatus{}))
 	})
 
 	It("should handle arbitrary types", func() {
 		obj.Object["status"] = 10
-		Expect(statusFor(obj)).To(Equal(&helmAppStatus{}))
+		Expect(statusFor(obj)).To(Equal(&HelmAppStatus{}))
 
 		obj.Object["status"] = "hello"
-		Expect(statusFor(obj)).To(Equal(&helmAppStatus{}))
+		Expect(statusFor(obj)).To(Equal(&HelmAppStatus{}))
 	})
 })

@@ -51,11 +51,11 @@ import (
 	"github.com/operator-framework/helm-operator-plugins/pkg/annotation"
 	helmclient "github.com/operator-framework/helm-operator-plugins/pkg/client"
 	"github.com/operator-framework/helm-operator-plugins/pkg/hook"
-	"github.com/operator-framework/helm-operator-plugins/pkg/reconciler/internal/conditions"
 	"github.com/operator-framework/helm-operator-plugins/pkg/reconciler/internal/diff"
 	internalhook "github.com/operator-framework/helm-operator-plugins/pkg/reconciler/internal/hook"
-	"github.com/operator-framework/helm-operator-plugins/pkg/reconciler/internal/updater"
 	internalvalues "github.com/operator-framework/helm-operator-plugins/pkg/reconciler/internal/values"
+	"github.com/operator-framework/helm-operator-plugins/pkg/status/conditions"
+	"github.com/operator-framework/helm-operator-plugins/pkg/status/updater"
 	"github.com/operator-framework/helm-operator-plugins/pkg/values"
 )
 

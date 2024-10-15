@@ -143,7 +143,8 @@ func (conditions *Conditions) SetCondition(newCond Condition) bool {
 			changed := condition.Status != newCond.Status ||
 				condition.Reason != newCond.Reason ||
 				condition.Message != newCond.Message
-			(*conditions)[i] = newCond
+			*conditions = append((*conditions)[:i], (*conditions)[i+1:]...)
+			*conditions = append(*conditions, newCond)
 			return changed
 		}
 	}
